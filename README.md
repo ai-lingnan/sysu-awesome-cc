@@ -44,7 +44,7 @@ my-awesome-cc/
 |------|------|
 | **cc-insights** 📊 | Claude Code 交互历史自动归档与深度分析，支持多维度洞察、使用模式分析和改进建议生成 |
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 |
-| **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → "..."），支持代码块保护，适合中文文档排版 |
+| **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
 | **fetch4ai** 🌐 | 基于 crawl4ai 的智能网页内容抓取，支持多种过滤策略（剪枝/BM25/标签排除/组合），输出 LLM 友好的纯净 Markdown |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |

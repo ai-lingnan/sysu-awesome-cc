@@ -1,0 +1,275 @@
+#!/usr/bin/env python3
+"""
+Claude Code 深度洞察报告生成器
+基于分析数据生成 Markdown 格式的反思和优化建议报告
+
+使用方法:
+    python3 generate_insights.py --analysis ANALYSIS.json --output REPORT.md
+
+或直接生成（自动运行分析）:
+    python3 generate_insights.py --output REPORT.md
+"""
+
+import json
+import argparse
+from pathlib import Path
+from datetime import datetime
+import subprocess
+import sys
+
+
+def load_analysis(analysis_file: Path = None) -> dict:
+    """加载或生成分析数据"""
+    if analysis_file and analysis_file.exists():
+        with open(analysis_file, "r", encoding="utf-8") as f:
+            return json.load(f)
+
+    # 自动运行分析
+    script_dir = Path(__file__).parent
+    analyze_script = script_dir / "analyze_patterns.py"
+
+    if analyze_script.exists():
+        result = subprocess.run(
+            [sys.executable, str(analyze_script)],
+            capture_output=True,
+            text=True
+        )
+        if result.returncode == 0:
+            return json.loads(result.stdout)
+
+    return {"error": "Could not load or generate analysis"}
+
+
+def generate_hour_chart(hour_distribution: dict) -> str:
+    """生成时间分布 ASCII 图表"""
+    lines = []
+    max_count = max(h["count"] for h in hour_distribution.values()) if hour_distribution else 1
+
+    for hour in range(24):
+        data = hour_distribution.get(str(hour), hour_distribution.get(hour, {"count": 0}))
+        count = data["count"] if isinstance(data, dict) else 0
+        bar_length = int((count / max_count) * 30) if max_count > 0 else 0
+        bar = "█" * bar_length
+        lines.append(f"{hour:02d}:00 {bar} ({count})")
+
+    return "\n".join(lines)
+
+
+def generate_project_table(projects: dict, limit: int = 10) -> str:
+    """生成项目活跃度表格"""
+    lines = [
+        "| 排名 | 项目 | 输入次数 |",
+        "|------|------|----------|",
+    ]
+
+    for i, (project, count) in enumerate(list(projects.items())[:limit], 1):
+        lines.append(f"| {i} | {project} | {count} |")
+
+    return "\n".join(lines)
+
+
+def generate_insights_report(analysis: dict) -> str:
+    """生成完整的洞察报告"""
+    now = datetime.now().strftime("%Y-%m-%d")
+
+    history = analysis.get("history_analysis", {})
+    projects = analysis.get("project_analysis", {})
+    skills = analysis.get("skills_analysis", {})
+    summary = analysis.get("summary", {})
+
+    # 时间分布图
+    hour_chart = generate_hour_chart(history.get("hour_distribution", {}))
+
+    # 项目表格
+    project_table = generate_project_table(history.get("project_activity", {}))
+
+    # 高峰时段
+    peak_hours = history.get("peak_hours", [])
+    peak_hours_str = ", ".join([f"{h['hour']:02d}:00 ({h['count']}次)" for h in peak_hours])
+
+    # Skills 列表
+    skill_list = skills.get("skills", [])
+    skill_names = [s["name"] for s in skill_list]
+
+    report = f"""---
+created: {now}
+tags:
+  - type/reflection
+  - type/actionable
+  - status/active
+  - AI/optimization
+aliases: [CC优化建议, Claude Code Insights]
+---
+
+# Claude Code 使用洞察报告
+
+> 自动生成于 {now}
+
+---
+
+## 数据快照
+
+```
+总输入次数: {history.get('total_inputs', 'N/A')}
+活跃天数: {history.get('active_days', 'N/A')}
+日均输入: {history.get('avg_inputs_per_day', 'N/A')}
+项目数量: {projects.get('total_projects', 'N/A')}
+会话总数: {projects.get('total_sessions', 'N/A')}
+存储占用: {projects.get('total_size_mb', 'N/A')} MB
+已安装 Skills: {skills.get('installed', 'N/A')} 个
+```
+
+### 提问长度统计
+
+```
+平均词数: {history.get('prompt_length', {}).get('average', 'N/A')}
+最长提问: {history.get('prompt_length', {}).get('max', 'N/A')} 词
+最短提问: {history.get('prompt_length', {}).get('min', 'N/A')} 词
+```
+
+---
+
+## 一、时间分布分析
+
+### 每小时输入分布
+
+```
+{hour_chart}
+```
+
+### 高峰时段
+
+{peak_hours_str}
+
+### 洞察
+
+- **早晨高峰**: 05:00-09:00 是主要工作时段，适合深度工作
+- **午间次峰**: 12:00-16:00 有第二个活跃期
+- **晚间低谷**: 17:00 后几乎无使用
+
+### 建议
+
+1. 保持早晨深度工作习惯
+2. 考虑在低谷时段安排自动化任务
+3. 设置归档 cron job 在 02:00 运行
+
+---
+
+## 二、项目活跃度分析
+
+### Top 10 项目
+
+{project_table}
+
+### 项目规模分布
+
+```
+大型 (>1MB):  {projects.get('project_size_distribution', {}).get('large', 0)} 个
+中型 (0.1-1MB): {projects.get('project_size_distribution', {}).get('medium', 0)} 个
+小型 (<0.1MB): {projects.get('project_size_distribution', {}).get('small', 0)} 个
+```
+
+### 洞察
+
+- 高频项目集中在 Skill 开发和学术写作
+- 部分项目可能存在重叠（如多个 NewNote 变体）
+
+### 建议
+
+1. **项目整合**: 合并重叠项目，控制在 15-20 个
+2. **定期清理**: 删除低活跃度项目
+3. **命名规范**: 使用一致的项目命名
+
+---
+
+## 三、Skills 使用分析
+
+### 已安装 Skills ({skills.get('installed', 0)} 个)
+
+{chr(10).join(['- ' + name for name in skill_names]) if skill_names else '无已安装 Skills'}
+
+### 建议
+
+1. **审计使用率**: 季度检查 Skill 实际使用频率
+2. **合并相似功能**: 如 skill-writer 和 skill-development
+3. **文档化最佳实践**: 为高频 Skill 建立使用指南
+
+---
+
+## 四、优化行动清单
+
+### 立即执行（本周）
+
+- [ ] 设置自动归档 cron job
+- [ ] 清理低活跃度项目
+- [ ] 审计 Skill 使用情况
+
+### 短期（本月）
+
+- [ ] 合并重叠项目
+- [ ] 建立项目命名规范
+- [ ] 创建方法论笔记
+
+### 中期（本季度）
+
+- [ ] 开发归档摘要提取功能
+- [ ] 建立跨项目知识库
+- [ ] 优化工作流自动化
+
+---
+
+## 五、风险提示
+
+### 依赖风险
+
+- 高度依赖 Claude Code，建议保持归档习惯
+- 重要决策逻辑应显性化为文档
+
+### 存储风险
+
+- 当前占用 {projects.get('total_size_mb', 'N/A')} MB
+- 建议定期清理旧会话
+
+---
+
+## Related
+
+- [[Claude Code聊天记录索引]]
+- [[Claude Code交互模式反思]]
+
+---
+
+*Auto-generated by cc-insights skill*
+"""
+
+    return report
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Generate Claude Code insights report")
+    parser.add_argument("--analysis", type=str, help="Analysis JSON file")
+    parser.add_argument("--output", type=str, required=True, help="Output Markdown file")
+
+    args = parser.parse_args()
+
+    analysis_file = Path(args.analysis) if args.analysis else None
+    analysis = load_analysis(analysis_file)
+
+    if "error" in analysis:
+        print(f"Error: {analysis['error']}")
+        return 1
+
+    report = generate_insights_report(analysis)
+
+    output_path = Path(args.output)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write(report)
+
+    print(f"Report generated: {output_path}")
+    return 0
+
+
+if __name__ == "__main__":
+    exit(main())

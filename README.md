@@ -4,10 +4,16 @@
 
 欢迎贡献！如果觉得项目有用，请点个 ⭐ Star 支持一下！
 
+**🌟 项目地址**: [github.com/Xueheng-Li/sysu-awesome-cc](https://github.com/Xueheng-Li/sysu-awesome-cc)
+
+```bash
+git clone https://github.com/Xueheng-Li/sysu-awesome-cc.git
+```
+
 ## 📂 项目结构
 
 ```
-my-awesome-cc/
+sysu-awesome-cc/
 ├── agents/
 │   ├── paper-reviewer.md    # 📄 经济学论文审稿代理
 │   └── web-researcher.md    # 🔍 网络研究代理
@@ -54,14 +60,14 @@ my-awesome-cc/
 | **mineru-pdf-converter** 📑 | 使用 MinerU 云端 API 将 PDF 转换为高质量 Markdown，支持公式识别、表格提取、大文件自动拆分（>600页） |
 | **web-research** 🔬 | 结构化网络研究技能，通过子代理并行收集信息，系统化合成研究结果，支持复杂主题调研 - [From skillsmp](https://skillsmp.com/zh/skills/langchain-ai-deepagents-libs-deepagents-cli-examples-skills-web-research-skill-md) |
 
-## 📜 许可证
-
-本项目采用 [MIT 许可证](LICENSE)。
-
 ---
-
-**🌟 项目地址**: [github.com/Xueheng-Li/my-awesome-cc](https://github.com/Xueheng-Li/my-awesome-cc)
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Xueheng-Li/my-awesome-cc&type=Date)](https://star-history.com/#Xueheng-Li/my-awesome-cc&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=Xueheng-Li/sysu-awesome-cc&type=Date)](https://star-history.com/#Xueheng-Li/sysu-awesome-cc&Date)
+
+---
+
+## 📜 许可证
+
+本项目采用 [MIT 许可证](LICENSE)。

@@ -1,4 +1,4 @@
-# 🤖 My Awesome CC
+# 🤖 Our Awesome CC - Lingnan College SYSU
 
 这是一个中山大学岭南学院师生共同贡献维护的 **Claude Code** 插件和工具集合！🚀
 

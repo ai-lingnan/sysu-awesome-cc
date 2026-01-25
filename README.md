@@ -1,6 +1,8 @@
 # 🤖 My Awesome CC
 
-这是我的 **Claude Code** 插件和扩展集合！🚀
+这是一个中山大学岭南学院师生共同贡献维护的 **Claude Code** 插件和工具集合！🚀
+
+欢迎贡献！如果觉得项目有用，请点个 ⭐ Star 支持一下！
 
 ## 📂 项目结构
 
@@ -54,8 +56,12 @@ my-awesome-cc/
 
 ## 📜 许可证
 
-本项目遵循开源许可协议。
+本项目采用 [MIT 许可证](LICENSE)。
 
 ---
 
-**🌟 项目地址**: https://github.com/Xueheng-Li/my-awesome-cc
+**🌟 项目地址**: [github.com/Xueheng-Li/my-awesome-cc](https://github.com/Xueheng-Li/my-awesome-cc)
+
+## ⭐ Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=Xueheng-Li/my-awesome-cc&type=Date)](https://star-history.com/#Xueheng-Li/my-awesome-cc&Date)

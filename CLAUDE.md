@@ -5,21 +5,10 @@ This is a collection of Claude Code plugins (agents, commands, skills) maintaine
 ## Repository Structure
 
 - **agents/**: Subagent definitions (Task tool `subagent_type` targets)
-  - `paper-reviewer.md` - Economics paper referee reports
-  - `web-researcher.md` - Structured web research with source verification
 
 - **commands/**: Slash commands (`/command-name`)
-  - `multi-agent.md` - Multi-agent orchestration with context protection
 
 - **skills/**: Skills with supporting scripts and references
-  - `fetch4ai/` - Web content extraction via crawl4ai
-  - `md-to-docx/` - Markdown to Word conversion with Chinese formatting
-  - `mineru-pdf-converter/` - PDF to Markdown via MinerU cloud API
-  - `marp-slides-creator/` - Presentation creation with themed templates
-  - `cc-insights/` - Chat history analysis and archiving
-  - `chat-history-summarizer/` - Session documentation export
-  - `chinese-quote-converter/` - English to Chinese quotation mark conversion
-  - `web-research/` - Multi-agent research workflow
 
 ## Plugin Component Patterns
 

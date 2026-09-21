@@ -19,11 +19,11 @@ sysu-awesome-cc/
 │   └── web-researcher.md    # 🔍 网络研究代理
 ├── commands/                # ⚡ 斜杠命令（暂无）
 ├── skills/
-│   ├── cc-insights/         # 📊 CC 交互洞察分析
 │   ├── chat-history-summarizer/  # 📝 聊天历史总结
 │   ├── chinese-quote-converter/  # ✏️ 中文引号转换
-│   ├── fetch4ai/            # 🌐 网页内容抓取
-│   ├── marp-slides-creator/ # 🎨 Marp 演示文稿制作
+│   ├── frontend-design/     # 🎨 前端界面设计
+│   ├── github-trending/     # 🔥 GitHub 热门项目
+│   ├── marp-slides-creator/ # 🖼️ Marp 演示文稿制作
 │   ├── md-to-docx/          # 📄 Markdown 转 Word
 │   ├── mineru-pdf-converter/ # 📑 MinerU PDF 转 Markdown
 │   └── web-research/        # 🔬 结构化网络研究
@@ -44,10 +44,10 @@ sysu-awesome-cc/
 
 | 技能 | 说明 |
 |------|------|
-| **cc-insights** 📊 | Claude Code 交互历史自动归档与深度分析，支持多维度洞察、使用模式分析和改进建议生成 |
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 |
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
-| **fetch4ai** 🌐 | 基于 crawl4ai 的智能网页内容抓取，支持多种过滤策略（剪枝/BM25/标签排除/组合），输出 LLM 友好的纯净 Markdown |
+| **frontend-design** 🎨 | 创建独特、生产级的前端界面，避免通用 AI 美学风格，适用于网页、着陆页、仪表板、React 组件与 HTML/CSS 布局 |
+| **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单 |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |
 | **mineru-pdf-converter** 📑 | 使用 MinerU 云端 API 将 PDF 转换为高质量 Markdown，支持公式识别、表格提取、大文件自动拆分（>600页） |

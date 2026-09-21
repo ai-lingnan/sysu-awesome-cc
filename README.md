@@ -4,10 +4,10 @@
 
 欢迎贡献！如果觉得项目有用，请点个 ⭐ Star 支持一下！
 
-**🌟 项目地址**: [github.com/Xueheng-Li/sysu-awesome-cc](https://github.com/Xueheng-Li/sysu-awesome-cc)
+**🌟 项目地址**: [github.com/ai-lingnan/sysu-awesome-cc](https://github.com/ai-lingnan/sysu-awesome-cc)
 
 ```bash
-git clone https://github.com/Xueheng-Li/sysu-awesome-cc.git
+git clone https://github.com/ai-lingnan/sysu-awesome-cc.git
 ```
 
 ## 📂 项目结构
@@ -57,7 +57,7 @@ sysu-awesome-cc/
 
 ## ⭐ Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=Xueheng-Li/sysu-awesome-cc&type=Date)](https://star-history.com/#Xueheng-Li/sysu-awesome-cc&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ai-lingnan/sysu-awesome-cc&type=Date)](https://star-history.com/#ai-lingnan/sysu-awesome-cc&Date)
 
 ---
 

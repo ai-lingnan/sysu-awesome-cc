@@ -32,6 +32,7 @@ sysu-awesome-cc/
 │   ├── marp-slides-creator/ # 🖼️ Marp 演示文稿制作
 │   ├── md-to-docx/          # 📄 Markdown 转 Word
 │   ├── mineru-document-extractor/ # 📑 MinerU 文档提取
+│   ├── skill-creator/       # 🛠️ 技能创建与评测
 │   ├── ui-ux-pro-max/       # 🎛️ UI/UX 设计知识库
 │   ├── web-access/          # 🌍 联网访问与浏览器自动化
 │   └── web-research/        # 🔬 结构化网络研究
@@ -77,6 +78,7 @@ sysu-awesome-cc/
 | **frontend-design** 🎨 | Anthropic 官方前端设计技能：为新建或改造的界面提供有主张的视觉方向，涵盖美学定位、排版与布局选择，避免模板化的默认审美 | [anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/frontend-design) | Apache-2.0 |
 | **markitdown** 🔄 | 将 PDF、Office 文档、图片、音频、网页等 20+ 格式转为 Markdown，支持 OCR、音频转写、YouTube 字幕提取与批量转换 | 待确认 | — |
 | **mineru-document-extractor** 📑 | MinerU 官方文档提取技能：PDF、扫描件、Word、PPT、Excel、网页转 Markdown / HTML / LaTeX / DOCX，支持表格与公式识别、OCR、批量处理，80+ 语言 | [opendatalab/MinerU-Ecosystem](https://github.com/opendatalab/MinerU-Ecosystem/tree/main/skills) | Apache-2.0 |
+| **skill-creator** 🛠️ | Anthropic 官方技能开发工具：从零创建、修改与优化 skill，支持跑评测、方差分析基准测试与 description 触发准确率调优 | [anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/skill-creator) | Apache-2.0 |
 | **ui-ux-pro-max** 🎛️ | UI/UX 设计知识库：67 种界面风格、161 套配色、57 组字体搭配、99 条 UX 准则、25 种图表，覆盖 16 个技术栈，BM25 关键词检索 | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) | MIT |
 | **web-access** 🌍 | 统一的联网操作入口：搜索、抓取、登录后操作、CDP 浏览器自动化与站点经验积累，含 Jina 预处理降低 token 消耗 | [eze-is/web-access](https://github.com/eze-is/web-access) | MIT ¹ |
 | **web-research** 🔬 | 结构化网络研究：通过子代理并行收集信息并系统化合成结果，适合复杂主题调研 | [langchain-ai/deepagents](https://github.com/langchain-ai/deepagents/tree/main/libs/code/examples/skills/web-research) | MIT |

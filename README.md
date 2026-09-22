@@ -24,6 +24,8 @@ sysu-awesome-cc/
 │   ├── chinese-quote-converter/  # ✏️ 中文引号转换
 │   ├── frontend-design/     # 🎨 前端界面设计
 │   ├── github-trending/     # 🔥 GitHub 热门项目
+│   ├── html-slides/         # 🖥️ HTML 网页演示文稿
+│   ├── macro-data/          # 📈 宏观/财经数据取数
 │   ├── marp-slides-creator/ # 🖼️ Marp 演示文稿制作
 │   ├── md-to-docx/          # 📄 Markdown 转 Word
 │   ├── mineru-pdf-converter/ # 📑 MinerU PDF 转 Markdown
@@ -50,6 +52,8 @@ sysu-awesome-cc/
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
 | **frontend-design** 🎨 | 创建独特、生产级的前端界面，避免通用 AI 美学风格，适用于网页、着陆页、仪表板、React 组件与 HTML/CSS 布局 |
 | **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单 |
+| **html-slides** 🖥️ | 制作可在浏览器放映的 HTML 课件，含封面、分部目录、翻页动效与自绘图表，支持截图审阅与导出 PDF / 可编辑 PPTX |
+| **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位 |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |
 | **mineru-pdf-converter** 📑 | 使用 MinerU 云端 API 将 PDF 转换为高质量 Markdown，支持公式识别、表格提取、大文件自动拆分（>600页） |

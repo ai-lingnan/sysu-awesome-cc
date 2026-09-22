@@ -20,28 +20,45 @@
 
 <img width="879" height="376" alt="image" src="https://github.com/user-attachments/assets/a87fd816-a0b5-4264-b01c-9466eae90723" />
 
-给 Claude Code 装上完整联网能力的 skill。
+<p align="center">
+  <b>给 AI Agent 装上完整联网能力的 Skill。</b><br/>
+  <a href="https://web-access.eze.is">🌐 官网</a> · <a href="https://mp.weixin.qq.com/s/rps5YVB6TchT9npAaIWKCw">📖 设计详解</a> · <a href="#安装">⚡ 快速安装</a>
+</p>
 
-Claude Code 原本有 WebSearch、WebFetch，但缺少调度策略和浏览器自动化能力。这个 skill 补上的是：**联网策略 + CDP 浏览器操作 + 站点经验积累**。
+AI Agent 原本的联网能力（WebSearch、WebFetch）缺少调度策略和浏览器自动化能力。这个 Agent Skill 补上的是：**联网策略 + CDP 浏览器操作 + 站点经验积累**。兼容所有支持 SKILL.md 的 Agent（Claude Code、Cursor、Gemini CLI、Codex CLI 等）。
 
 > 推荐必读：[Web Access：一个 Skill，拉满 Agent 联网和浏览器能力](https://mp.weixin.qq.com/s/rps5YVB6TchT9npAaIWKCw) ，完整介绍了 Web-Access Skill 的开发细节与 Agent Skill 设计哲学，帮助你也能写出类似通用、高上限的 Skill
 
 ---
 
-## v2.4.3 能力
+## v2.5.2 能力
 
 | 能力 | 说明 |
 |------|------|
 | 联网工具自动选择 | WebSearch / WebFetch / curl / Jina / CDP，按场景自主判断，可任意组合 |
-| CDP Proxy 浏览器操作 | 直连用户日常 Chrome，天然携带登录态，支持动态页面、交互操作、视频截帧 |
+| CDP Proxy 浏览器操作 | 直连用户日常浏览器（Chrome / Edge / Chromium 系），天然携带登录态，支持动态页面、交互操作、视频截帧 |
 | 三种点击方式 | `/click`（JS click）、`/clickAt`（CDP 真实鼠标事件）、`/setFiles`（文件上传） |
+| 本地浏览器书签/历史检索 | `find-url.mjs` 跨 Chrome / Edge 查询公网搜不到的目标（内部系统）或用户访问过的页面，支持关键词/时间窗/访问频度排序 |
 | 并行分治 | 多目标时分发子 Agent 并行执行，共享一个 Proxy，tab 级隔离 |
 | 站点经验积累 | 按域名存储操作经验（URL 模式、平台特征、已知陷阱），跨 session 复用 |
 | 媒体提取 | 从 DOM 直取图片/视频 URL，或对视频任意时间点截帧分析 |
 
-**v2.4.3 更新：**
+**v2.5.2 更新：**
+- **Microsoft Edge 支持** — CDP Proxy 不再绑定 Chrome，新增 Edge 适配（及 Chromium、Chrome Canary 等 Chromium 系，通过同一套自动发现机制接入）。在 `edge://inspect/#remote-debugging` 勾选 "Allow remote debugging for this browser instance" 即可
+- **浏览器偏好持久化** — 新增 `config.env`（gitignored，首次运行从模板创建），通过 `WEB_ACCESS_BROWSER` 固定默认浏览器；多浏览器同时开启 toggle 时 Agent 会询问偏好。也支持单次覆盖 `--browser <chrome|edge>`
+- **不擅自降级** — 偏好/指定的浏览器没启动或没开 toggle 时硬错并给出明确处理步骤，不会悄悄连到别的浏览器；proxy 首次成功连接后 pin 住浏览器 id，避免运行中漂移
+- **find-url 也支持 Edge** — 本地书签/历史检索默认遍历 Chrome 与 Edge，可用 `--browser <chrome|edge>` 限定单一浏览器
+
+<details><summary>v2.5.0 更新</summary>
+
+- **本地 Chrome 资源检索** — 新增 `scripts/find-url.mjs`，从本地 Chrome 书签/历史按关键词/时间窗/访问频度定位 URL。典型场景：用户提到组织内部系统（"我们的 XX 平台"等公网搜不到的目标）、回查之前访问过但不记得地址的页面、查看最近高频访问网站等（场景感谢 @MVPGFC 在 #60 提出）
+</details>
+
+<details><summary>v2.4.3 更新</summary>
+
 - **修复 CLAUDE_SKILL_DIR 路径问题** — bash 代码块改用 `${CLAUDE_SKILL_DIR}` 字符串替换语法，修复 Windows Git Bash 路径转换错误和变量未设置问题（#47 #46）
 - **站点经验列表合并到前置检查** — 启动检查通过后自动输出已有站点经验列表，移除不可靠的 `!` 内联注入
+</details>
 
 <details><summary>v2.4.1 更新</summary>
 
@@ -65,20 +82,28 @@ Claude Code 原本有 WebSearch、WebFetch，但缺少调度策略和浏览器�
 
 ## 安装
 
-**方式一：让 Claude 自动安装**
+**方式一：npx skills 一键安装（推荐）**
+
+```bash
+npx skills add eze-is/web-access
+```
+
+> [skills CLI](https://github.com/vercel-labs/skills) 是开源的 Agent Skill 包管理器，自动检测你的 Agent 环境并安装到正确位置。
+
+**方式二：让 Agent 自动安装**
 
 ```
 帮我安装这个 skill：https://github.com/eze-is/web-access
 ```
 
-**方式二：Plugin 安装**
+**方式三：Plugin 安装（Claude Code）**
 
 ```bash
 claude plugin marketplace add https://github.com/eze-is/web-access
 claude plugin install web-access@web-access --scope user
 ```
 
-**方式三：手动**
+**方式四：手动**
 
 ```bash
 git clone https://github.com/eze-is/web-access ~/.claude/skills/web-access
@@ -86,10 +111,35 @@ git clone https://github.com/eze-is/web-access ~/.claude/skills/web-access
 
 ## 前置配置（CDP 模式）
 
-CDP 模式需要 **Node.js 22+** 和 Chrome 开启远程调试：
+CDP 模式需要 **Node.js 22+** 和浏览器（Chrome / Edge）开启远程调试：
 
-1. Chrome 地址栏打开 `chrome://inspect/#remote-debugging`
+1. 在你想用的浏览器地址栏打开对应 inspect 页面：
+   - Chrome：`chrome://inspect/#remote-debugging`
+   - Edge：`edge://inspect/#remote-debugging`
 2. 勾选 **Allow remote debugging for this browser instance**（可能需要重启浏览器）
+
+### 浏览器偏好（config.env）
+
+skill 长期偏好保存在 `${CLAUDE_SKILL_DIR}/config.env`（首次运行自动从 `config.env.template` 创建，gitignored）：
+
+```bash
+# 留空 = 每次启动都询问偏好；设值 = 固定使用该浏览器
+WEB_ACCESS_BROWSER=edge
+```
+
+合法值：`chrome` / `edge`
+
+**临时用别的浏览器**（不修改 config.env）：
+
+```bash
+node "${CLAUDE_SKILL_DIR}/scripts/check-deps.mjs" --browser chrome
+```
+
+**切换浏览器**（proxy 已连接旧的）：
+
+```bash
+pkill -f cdp-proxy.mjs && node "${CLAUDE_SKILL_DIR}/scripts/check-deps.mjs"
+```
 
 环境检查（Agent 运行时会自动完成前置检查，无需手动执行）：
 
@@ -101,7 +151,7 @@ node "${CLAUDE_SKILL_DIR}/scripts/check-deps.mjs"
 
 ## CDP Proxy API
 
-Proxy 通过 WebSocket 直连 Chrome（兼容 `chrome://inspect` 方式，无需命令行参数启动），提供 HTTP API：
+Proxy 通过 WebSocket 直连浏览器（兼容 `chrome://inspect` / `edge://inspect` 方式，无需命令行参数启动），提供 HTTP API：
 
 ```bash
 # 启动（Agent 会自动管理 Proxy 生命周期，无需手动启动）
@@ -117,7 +167,10 @@ curl -s -X POST "http://localhost:3456/setFiles?target=ID" \
 curl -s "http://localhost:3456/screenshot?target=ID&file=/tmp/shot.png"     # 截图
 curl -s "http://localhost:3456/scroll?target=ID&direction=bottom"           # 滚动
 curl -s "http://localhost:3456/close?target=ID"                             # 关闭 tab
+curl -s "http://localhost:3456/health"                                      # 查看状态（含 managedTabs 数量）
 ```
+
+Proxy 会自动追踪通过 `/new` 创建的 tab，闲置 15 分钟后自动关闭，防止 Agent 异常退出时留下孤儿 tab。可通过环境变量 `CDP_TAB_IDLE_TIMEOUT`（单位毫秒）调整超时时间。
 
 ## ⚠️ 使用前提醒
 
@@ -141,10 +194,14 @@ curl -s "http://localhost:3456/close?target=ID"                             # �
 
 ## License
 
-MIT · 作者：[一泽 Eze](https://github.com/eze-is)
+MIT · 作者：[一泽 Eze](https://github.com/eze-is) · [官网](https://web-access.eze.is)
 
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=eze-is/web-access&type=Date)](https://star-history.com/#eze-is/web-access&Date)
+
+## Clawhub Download History
+
+[![Download History](https://skill-history.com/chart/eze-is/web-access.svg)](https://skill-history.com/eze-is/web-access)
 
 <img width="1280" height="306" alt="image" src="https://github.com/user-attachments/assets/2afa25c2-3730-413e-b40f-94e52567249d" />

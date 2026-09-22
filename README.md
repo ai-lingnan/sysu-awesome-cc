@@ -24,14 +24,14 @@ sysu-awesome-cc/
 │   ├── chat-history-summarizer/  # 📝 聊天历史总结
 │   ├── chinese-quote-converter/  # ✏️ 中文引号转换
 │   ├── do-agent/            # 🧩 多代理任务编排
-│   ├── frontend-design/     # 🎨 前端界面设计
+│   ├── frontend-design/     # 🎨 前端视觉设计
 │   ├── github-trending/     # 🔥 GitHub 热门项目
 │   ├── html-slides/         # 🖥️ HTML 网页演示文稿
 │   ├── macro-data/          # 📈 宏观/财经数据取数
 │   ├── markitdown/          # 🔄 多格式文件转 Markdown
 │   ├── marp-slides-creator/ # 🖼️ Marp 演示文稿制作
 │   ├── md-to-docx/          # 📄 Markdown 转 Word
-│   ├── mineru-pdf-converter/ # 📑 MinerU PDF 转 Markdown
+│   ├── mineru-document-extractor/ # 📑 MinerU 文档提取
 │   ├── ui-ux-pro-max/       # 🎛️ UI/UX 设计知识库
 │   ├── web-access/          # 🌍 联网访问与浏览器自动化
 │   └── web-research/        # 🔬 结构化网络研究
@@ -57,21 +57,22 @@ sysu-awesome-cc/
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 | 🏠 原创 |
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 | 🏠 原创 |
 | **do-agent** 🧩 | 多代理多阶段任务编排：规划→执行→审阅→修订四个阶段并行派发子代理，子代理结果落盘而非回传，保护主代理上下文 | 🏠 原创 |
-| **frontend-design** 🎨 | 创建独特、生产级的前端界面，避免通用 AI 美学风格，适用于网页、着陆页、仪表板、React 组件与 HTML/CSS 布局 | 待确认 |
-| **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单 | 待确认 |
+| **frontend-design** 🎨 | Anthropic 官方前端设计技能：为新建或改造的界面提供有主张的视觉方向，涵盖美学定位、排版与布局选择，避免模板化的默认审美 | [anthropics/skills](https://github.com/anthropics/skills/tree/main/skills/frontend-design) · Apache-2.0 |
+| **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单 | 🏠 贡献者 [@keta1930](https://github.com/keta1930) |
 | **html-slides** 🖥️ | 制作可在浏览器放映的 HTML 课件，含封面、分部目录、翻页动效与自绘图表，支持截图审阅与导出 PDF / 可编辑 PPTX | 🏠 原创 |
 | **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位 | 🏠 原创 |
 | **markitdown** 🔄 | 将 PDF、Office 文档、图片、音频、网页等 20+ 格式转为 Markdown，支持 OCR、音频转写、YouTube 字幕提取与批量转换 | 待确认 |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 | 🏠 原创 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 | 🏠 原创 |
-| **mineru-pdf-converter** 📑 | 使用 MinerU 云端 API 将 PDF 转换为高质量 Markdown，支持公式识别、表格提取、大文件自动拆分（>600页） | 待确认 |
+| **mineru-document-extractor** 📑 | MinerU 官方文档提取技能：PDF、扫描件、Word、PPT、Excel、网页转 Markdown / HTML / LaTeX / DOCX，支持表格与公式识别、OCR、批量处理，80+ 语言 | [opendatalab/MinerU-Ecosystem](https://github.com/opendatalab/MinerU-Ecosystem/tree/main/skills) · Apache-2.0 |
 | **ui-ux-pro-max** 🎛️ | UI/UX 设计知识库：67 种界面风格、161 套配色、57 组字体搭配、99 条 UX 准则、25 种图表，覆盖 16 个技术栈，BM25 关键词检索 | [nextlevelbuilder/ui-ux-pro-max-skill](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) · MIT |
 | **web-access** 🌍 | 统一的联网操作入口：搜索、抓取、登录后操作、CDP 浏览器自动化与站点经验积累，含 Jina 预处理降低 token 消耗 | [eze-is/web-access](https://github.com/eze-is/web-access) · MIT |
-| **web-research** 🔬 | 结构化网络研究技能，通过子代理并行收集信息，系统化合成研究结果，支持复杂主题调研 | [skillsmp](https://skillsmp.com/zh/skills/langchain-ai-deepagents-libs-deepagents-cli-examples-skills-web-research-skill-md) |
+| **web-research** 🔬 | 结构化网络研究：通过子代理并行收集信息并系统化合成结果，适合复杂主题调研 | [langchain-ai/deepagents](https://github.com/langchain-ai/deepagents/tree/main/libs/code/examples/skills/web-research) · MIT |
 
-> **来源说明**：🏠 原创 = 岭南学院师生自行编写；其余为第三方开源作品，已在各自目录内保留上游的
-> LICENSE 与署名文件，使用时请遵守对应许可证。标注「待确认」的表示上游出处尚未查明，
-> 知道来源的欢迎开 issue 补充。
+> **来源说明**：🏠 = 岭南学院师生自行编写或贡献；其余为第三方开源作品，均已同步至上游最新版本，
+> 并在各自目录内附上游 LICENSE 与署名，使用时请遵守对应许可证。
+> `web-access` 上游仓库未提供 LICENSE 文件，许可证声明（MIT）写在其 `SKILL.md` 的 frontmatter 里。
+> 标注「待确认」的表示上游出处尚未查明，知道来源的欢迎开 issue 补充。
 
 
 ---

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// CDP Proxy - 通过 HTTP API 操控用户日常 Chrome
-// 要求：Chrome 已开启 --remote-debugging-port
+// CDP Proxy - 通过 HTTP API 操控用户日常浏览器（Chrome / Edge / Chromium 等）
+// 要求：浏览器已开启 remote debugging（chrome://inspect#remote-debugging toggle）
 // Node.js 22+（使用原生 WebSocket）
 
 import http from 'node:http';
@@ -9,12 +9,27 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import net from 'node:net';
+import { selectBrowser, findFallbackPort } from './browser-discovery.mjs';
+
+// --- 解析命令行 --browser 参数（本次启动用哪个浏览器）---
+function parseBrowserArg() {
+  const argv = process.argv.slice(2);
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--browser' && argv[i + 1]) return argv[i + 1];
+    if (argv[i].startsWith('--browser=')) return argv[i].slice('--browser='.length);
+  }
+  return null;
+}
+const BROWSER_OVERRIDE = parseBrowserArg();
 
 const PORT = parseInt(process.env.CDP_PROXY_PORT || '3456');
 let ws = null;
 let cmdId = 0;
 const pending = new Map(); // id -> {resolve, timer}
 const sessions = new Map(); // targetId -> sessionId
+const managedTabs = new Map(); // targetId -> { lastAccessed: number }
+const TAB_IDLE_TIMEOUT = parseInt(process.env.CDP_TAB_IDLE_TIMEOUT || '900000'); // 15 min default
+const CLEANUP_INTERVAL = 60000; // sweep every 60s
 
 // --- WebSocket 兼容层 ---
 let WS;
@@ -32,73 +47,56 @@ if (typeof globalThis.WebSocket !== 'undefined') {
   }
 }
 
-// --- 自动发现 Chrome 调试端口 ---
+// proxy 启动时连接到的浏览器（用于 /health 暴露给 check-deps 比较）
+let connectedBrowser = null; // { id, label, source }
+
+// pin 首次成功连接的浏览器 id。重连时只接受同一 id，避免悄悄降级到别的浏览器。
+let pinnedBrowserId = null;
+
+// --- 自动发现浏览器调试端口 ---
+// 决策完全委派给 browser-discovery.selectBrowser；此处只做日志和返回结构包装。
 async function discoverChromePort() {
-  // 1. 尝试读 DevToolsActivePort 文件
-  const possiblePaths = [];
-  const platform = os.platform();
-
-  if (platform === 'darwin') {
-    const home = os.homedir();
-    possiblePaths.push(
-      path.join(home, 'Library/Application Support/Google/Chrome/DevToolsActivePort'),
-      path.join(home, 'Library/Application Support/Google/Chrome Canary/DevToolsActivePort'),
-      path.join(home, 'Library/Application Support/Chromium/DevToolsActivePort'),
-    );
-  } else if (platform === 'linux') {
-    const home = os.homedir();
-    possiblePaths.push(
-      path.join(home, '.config/google-chrome/DevToolsActivePort'),
-      path.join(home, '.config/chromium/DevToolsActivePort'),
-    );
-  } else if (platform === 'win32') {
-    const localAppData = process.env.LOCALAPPDATA || '';
-    possiblePaths.push(
-      path.join(localAppData, 'Google/Chrome/User Data/DevToolsActivePort'),
-      path.join(localAppData, 'Chromium/User Data/DevToolsActivePort'),
-    );
-  }
-
-  for (const p of possiblePaths) {
-    try {
-      const content = fs.readFileSync(p, 'utf-8').trim();
-      const lines = content.split('\n');
-      const port = parseInt(lines[0]);
-      if (port > 0 && port < 65536) {
-        const ok = await checkPort(port);
-        if (ok) {
-          // 第二行是带 UUID 的 WebSocket 路径（如 /devtools/browser/xxx-xxx）
-          // 非显式 --remote-debugging-port 启动时，Chrome 可能只接受此路径
-          const wsPath = lines[1] || null;
-          console.log(`[CDP Proxy] 从 DevToolsActivePort 发现端口: ${port}${wsPath ? ' (带 wsPath)' : ''}`);
-          return { port, wsPath };
-        }
-      }
-    } catch { /* 文件不存在，继续 */ }
-  }
-
-  // 2. 扫描常用端口
-  const commonPorts = [9222, 9229, 9333];
-  for (const port of commonPorts) {
-    const ok = await checkPort(port);
-    if (ok) {
-      console.log(`[CDP Proxy] 扫描发现 Chrome 调试端口: ${port}`);
-      return { port, wsPath: null };
+  const result = await selectBrowser(BROWSER_OVERRIDE);
+  if (result.kind === 'ok') {
+    if (pinnedBrowserId && pinnedBrowserId !== result.browser.id) {
+      throw new Error(
+        `本次连接的浏览器已经是 ${pinnedBrowserId}，不会自动切到 ${result.browser.id}。` +
+        `如果想换成 ${result.browser.id}，请先在终端运行 pkill -f cdp-proxy.mjs 重置。`
+      );
     }
+    pinnedBrowserId = result.browser.id;
+    connectedBrowser = { id: result.browser.id, label: result.browser.label, source: result.source };
+    const tag = result.source === 'override' ? '[--browser 指定]' : '[config.env 偏好]';
+    console.log(`[CDP Proxy] 选用 ${result.browser.label} (端口 ${result.browser.port}${result.browser.wsPath ? '，带 wsPath' : ''}) ${tag}`);
+    return { port: result.browser.port, wsPath: result.browser.wsPath };
   }
-
+  // mismatch：有显式偏好但未检测到 —— 硬错，绝不降级
+  if (result.kind === 'mismatch') {
+    const expected = result.override || result.configured;
+    const src = result.source === 'override' ? '本次指定' : '默认偏好';
+    throw new Error(
+      `${src}的浏览器是 "${expected}"，但没连上。Agent 处理顺序：` +
+      `(1) 先用系统命令打开 ${expected}（按平台选择，如 macOS 的 open -a），稍等后重试请求；` +
+      `(2) 若仍失败，说明远程调试开关没启用 —— 告知用户在地址栏访问 ${expected}://inspect/#remote-debugging 勾选 "Allow remote debugging for this browser instance"。`
+    );
+  }
+  // 已 pin 过浏览器（如首次连上 edge 后 edge 退出）：拒绝任何 fallback
+  if (pinnedBrowserId) {
+    throw new Error(
+      `本次连接的浏览器是 ${pinnedBrowserId}，但现在没连上。Agent 处理顺序：` +
+      `(1) 先用系统命令打开 ${pinnedBrowserId}（按平台选择），稍等后重试请求；` +
+      `(2) 若仍失败，告知用户在地址栏访问 ${pinnedBrowserId}://inspect/#remote-debugging 重新勾选允许。` +
+      `若想换成其他浏览器，请先在终端运行 pkill -f cdp-proxy.mjs 重置。`
+    );
+  }
+  // 仅在「从未成功连接 + 无偏好/override」时允许固定端口兜底（手动 --remote-debugging-port 启动场景）
+  const fallbackPort = await findFallbackPort();
+  if (fallbackPort !== null) {
+    connectedBrowser = { id: 'unknown', label: '未知（通过手动调试端口连接）', source: 'fallback' };
+    console.log(`[CDP Proxy] 通过手动调试端口连接: ${fallbackPort}`);
+    return { port: fallbackPort, wsPath: null };
+  }
   return null;
-}
-
-// 用 TCP 探测端口是否监听——避免 WebSocket 连接触发 Chrome 安全弹窗
-// （WebSocket 探测会被 Chrome 视为调试连接，弹出授权对话框）
-function checkPort(port) {
-  return new Promise((resolve) => {
-    const socket = net.createConnection(port, '127.0.0.1');
-    const timer = setTimeout(() => { socket.destroy(); resolve(false); }, 2000);
-    socket.once('connect', () => { clearTimeout(timer); socket.destroy(); resolve(true); });
-    socket.once('error', () => { clearTimeout(timer); resolve(false); });
-  });
 }
 
 function getWebSocketUrl(port, wsPath) {
@@ -138,7 +136,7 @@ async function connect() {
     const onOpen = () => {
       cleanup();
       connectingPromise = null;
-      console.log(`[CDP Proxy] 已连接 Chrome (端口 ${chromePort})`);
+      console.log(`[CDP Proxy] 已连接浏览器 (端口 ${chromePort})`);
       resolve();
     };
     const onError = (e) => {
@@ -157,6 +155,7 @@ async function connect() {
       chromePort = null; // 重置端口缓存，下次连接重新发现
       chromeWsPath = null;
       sessions.clear();
+      managedTabs.clear();
     };
     const onMessage = (evt) => {
       const data = typeof evt === 'string' ? evt : (evt.data || evt);
@@ -247,6 +246,35 @@ async function enablePortGuard(sessionId) {
   } catch { /* Fetch 域启用失败不影响主流程 */ }
 }
 
+// --- 闲置 Tab 自动清理 ---
+function touchTab(targetId) {
+  const entry = managedTabs.get(targetId);
+  if (entry) entry.lastAccessed = Date.now();
+}
+
+async function cleanupIdleTabs() {
+  if (!ws || (ws.readyState !== WS.OPEN && ws.readyState !== 1)) return;
+  const now = Date.now();
+  for (const [targetId, info] of managedTabs) {
+    if (now - info.lastAccessed < TAB_IDLE_TIMEOUT) continue;
+    try { await sendCDP('Target.closeTarget', { targetId }); } catch { /* tab may already be closed */ }
+    sessions.delete(targetId);
+    managedTabs.delete(targetId);
+    console.log(`[CDP Proxy] Auto-closed idle tab: ${targetId}`);
+  }
+}
+
+async function closeAllManagedTabs() {
+  if (!ws || (ws.readyState !== WS.OPEN && ws.readyState !== 1)) return;
+  const targets = [...managedTabs.keys()];
+  for (const targetId of targets) {
+    try { await sendCDP('Target.closeTarget', { targetId }); } catch { /* ignore */ }
+    sessions.delete(targetId);
+    managedTabs.delete(targetId);
+  }
+  if (targets.length) console.log(`[CDP Proxy] Shutdown: closed ${targets.length} managed tab(s)`);
+}
+
 // --- 等待页面加载 ---
 async function waitForLoad(sessionId, timeoutMs = 15000) {
   // 启用 Page 域
@@ -289,14 +317,22 @@ const server = http.createServer(async (req, res) => {
   const parsed = new URL(req.url, `http://localhost:${PORT}`);
   const pathname = parsed.pathname;
   const q = Object.fromEntries(parsed.searchParams);
+  if (q.target) touchTab(q.target);
 
   res.setHeader('Content-Type', 'application/json; charset=utf-8');
 
   try {
-    // /health 不需要连接 Chrome
+    // /health 不需要连接浏览器
     if (pathname === '/health') {
       const connected = ws && (ws.readyState === WS.OPEN || ws.readyState === 1);
-      res.end(JSON.stringify({ status: 'ok', connected, sessions: sessions.size, chromePort }));
+      res.end(JSON.stringify({
+        status: 'ok',
+        connected,
+        browser: connectedBrowser,
+        sessions: sessions.size,
+        managedTabs: managedTabs.size,
+        chromePort,
+      }));
       return;
     }
 
@@ -314,6 +350,7 @@ const server = http.createServer(async (req, res) => {
       const targetUrl = q.url || 'about:blank';
       const resp = await sendCDP('Target.createTarget', { url: targetUrl, background: true });
       const targetId = resp.result.targetId;
+      managedTabs.set(targetId, { lastAccessed: Date.now() });
 
       // 等待页面加载
       if (targetUrl !== 'about:blank') {
@@ -330,6 +367,7 @@ const server = http.createServer(async (req, res) => {
     else if (pathname === '/close') {
       const resp = await sendCDP('Target.closeTarget', { targetId: q.target });
       sessions.delete(q.target);
+      managedTabs.delete(q.target);
       res.end(JSON.stringify(resp.result));
     }
 
@@ -588,6 +626,19 @@ async function main() {
     // 启动时尝试连接 Chrome（非阻塞）
     connect().catch(e => console.error('[CDP Proxy] 初始连接失败:', e.message, '（将在首次请求时重试）'));
   });
+
+  // 定时清理闲置 tab
+  const cleanupTimer = setInterval(cleanupIdleTabs, CLEANUP_INTERVAL);
+  cleanupTimer.unref();
+
+  const shutdown = async (sig) => {
+    console.log(`[CDP Proxy] ${sig}, cleaning up...`);
+    clearInterval(cleanupTimer);
+    await closeAllManagedTabs();
+    process.exit(0);
+  };
+  process.on('SIGINT', () => shutdown('SIGINT'));
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
 }
 
 // 防止未捕获异常导致进程崩溃

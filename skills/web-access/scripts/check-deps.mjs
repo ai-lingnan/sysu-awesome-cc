@@ -1,101 +1,72 @@
 #!/usr/bin/env node
-// 环境检查 + 确保 CDP Proxy 就绪（跨平台，替代 check-deps.sh）
+// 环境检查 + 确保 CDP Proxy 就绪
+//
+// 用法：
+//   node check-deps.mjs                  默认行为：读 config.env 偏好
+//   node check-deps.mjs --browser edge   本次临时指定浏览器（不写 config.env）
+//
+// 持久偏好 → config.env (skill 根目录, gitignored)
+// 单次覆盖 → --browser 命令行参数（全链路 argv，不碰 process.env）
 
 import { spawn } from 'node:child_process';
 import fs from 'node:fs';
-import net from 'node:net';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { selectBrowser, knownBrowsers, findFallbackPort } from './browser-discovery.mjs';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const PROXY_SCRIPT = path.join(ROOT, 'scripts', 'cdp-proxy.mjs');
 const PROXY_PORT = Number(process.env.CDP_PROXY_PORT || 3456);
+const CONFIG_PATH = path.join(ROOT, 'config.env');
+const CONFIG_TEMPLATE = path.join(ROOT, 'templates', 'config.env.template');
+
+// --- 参数解析 ---
+
+function parseArgs(argv) {
+  const opts = { browser: null };
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i] === '--browser' && argv[i + 1]) { opts.browser = argv[i + 1]; i++; }
+    else if (argv[i].startsWith('--browser=')) { opts.browser = argv[i].slice('--browser='.length); }
+  }
+  return opts;
+}
+
+// --- 首次安装：从模板创建 config.env ---
+
+function ensureConfigExists() {
+  if (fs.existsSync(CONFIG_PATH)) return;
+  try {
+    fs.copyFileSync(CONFIG_TEMPLATE, CONFIG_PATH);
+    console.log(`config: 已从模板创建 ${CONFIG_PATH}`);
+  } catch {
+    // 模板不存在或拷贝失败 —— 不阻塞，readConfig 会兜底
+  }
+}
 
 // --- Node.js 版本检查 ---
 
 function checkNode() {
   const major = Number(process.versions.node.split('.')[0]);
   const version = `v${process.versions.node}`;
-  if (major >= 22) {
-    console.log(`node: ok (${version})`);
-  } else {
-    console.log(`node: warn (${version}, 建议升级到 22+)`);
-  }
-}
-
-// --- TCP 端口探测 ---
-
-function checkPort(port, host = '127.0.0.1', timeoutMs = 2000) {
-  return new Promise((resolve) => {
-    const socket = net.createConnection(port, host);
-    const timer = setTimeout(() => { socket.destroy(); resolve(false); }, timeoutMs);
-    socket.once('connect', () => { clearTimeout(timer); socket.destroy(); resolve(true); });
-    socket.once('error', () => { clearTimeout(timer); resolve(false); });
-  });
-}
-
-// --- Chrome 调试端口检测（DevToolsActivePort 多路径 + 常见端口回退） ---
-
-function activePortFiles() {
-  const home = os.homedir();
-  const localAppData = process.env.LOCALAPPDATA || '';
-  switch (os.platform()) {
-    case 'darwin':
-      return [
-        path.join(home, 'Library/Application Support/Google/Chrome/DevToolsActivePort'),
-        path.join(home, 'Library/Application Support/Google/Chrome Canary/DevToolsActivePort'),
-        path.join(home, 'Library/Application Support/Chromium/DevToolsActivePort'),
-      ];
-    case 'linux':
-      return [
-        path.join(home, '.config/google-chrome/DevToolsActivePort'),
-        path.join(home, '.config/chromium/DevToolsActivePort'),
-      ];
-    case 'win32':
-      return [
-        path.join(localAppData, 'Google/Chrome/User Data/DevToolsActivePort'),
-        path.join(localAppData, 'Chromium/User Data/DevToolsActivePort'),
-      ];
-    default:
-      return [];
-  }
-}
-
-async function detectChromePort() {
-  // 优先从 DevToolsActivePort 文件读取
-  for (const filePath of activePortFiles()) {
-    try {
-      const lines = fs.readFileSync(filePath, 'utf8').trim().split(/\r?\n/).filter(Boolean);
-      const port = parseInt(lines[0], 10);
-      if (port > 0 && port < 65536 && await checkPort(port)) {
-        return port;
-      }
-    } catch (_) {}
-  }
-  // 回退：探测常见端口
-  for (const port of [9222, 9229, 9333]) {
-    if (await checkPort(port)) {
-      return port;
-    }
-  }
-  return null;
+  if (major >= 22) console.log(`node: ok (${version})`);
+  else console.log(`node: warn (${version}, 建议升级到 22+)`);
 }
 
 // --- CDP Proxy 启动与等待 ---
 
 function httpGetJson(url, timeoutMs = 3000) {
   return fetch(url, { signal: AbortSignal.timeout(timeoutMs) })
-    .then(async (res) => {
-      try { return JSON.parse(await res.text()); } catch { return null; }
-    })
+    .then(async (res) => { try { return JSON.parse(await res.text()); } catch { return null; } })
     .catch(() => null);
 }
 
-function startProxyDetached() {
+function startProxyDetached(browserOverride) {
   const logFile = path.join(os.tmpdir(), 'cdp-proxy.log');
   const logFd = fs.openSync(logFile, 'a');
-  const child = spawn(process.execPath, [PROXY_SCRIPT], {
+  const args = [PROXY_SCRIPT];
+  if (browserOverride) args.push('--browser', browserOverride);
+  const child = spawn(process.execPath, args, {
     detached: true,
     stdio: ['ignore', logFd, logFd],
     ...(os.platform() === 'win32' ? { windowsHide: true } : {}),
@@ -104,56 +75,121 @@ function startProxyDetached() {
   fs.closeSync(logFd);
 }
 
-async function ensureProxy() {
+async function ensureProxy(expectedBrowserId, browserOverride) {
+  const healthUrl = `http://127.0.0.1:${PROXY_PORT}/health`;
   const targetsUrl = `http://127.0.0.1:${PROXY_PORT}/targets`;
 
-  // /targets 返回 JSON 数组即 ready
-  const targets = await httpGetJson(targetsUrl);
-  if (Array.isArray(targets)) {
-    console.log('proxy: ready');
+  // 复用：proxy 已运行 + 已连接浏览器 → 校验 expected vs actual
+  const health = await httpGetJson(healthUrl);
+  if (health?.status === 'ok' && health.connected) {
+    const runningId = health.browser?.id;
+    const runningLabel = health.browser?.label || runningId || 'unknown';
+    if (expectedBrowserId && runningId && runningId !== 'unknown' && runningId !== expectedBrowserId) {
+      console.log(`proxy: 浏览器不一致 — 当前已连着 ${runningLabel}，但本次需要 ${expectedBrowserId}`);
+      console.log('  请在终端运行 pkill -f cdp-proxy.mjs 重置后再试');
+      return false;
+    }
+    console.log(`proxy: ready (${runningLabel})`);
     return true;
   }
 
-  // 未运行或未连接，启动并等待
   console.log('proxy: connecting...');
-  startProxyDetached();
+  startProxyDetached(browserOverride);
 
-  // 等 proxy 进程就绪
   await new Promise((r) => setTimeout(r, 2000));
 
   for (let i = 1; i <= 15; i++) {
     const result = await httpGetJson(targetsUrl, 8000);
     if (Array.isArray(result)) {
-      console.log('proxy: ready');
+      const newHealth = await httpGetJson(healthUrl);
+      const label = newHealth?.browser?.label || 'unknown';
+      console.log(`proxy: ready (${label})`);
       return true;
     }
     if (i === 1) {
-      console.log('⚠️  Chrome 可能有授权弹窗，请点击「允许」后等待连接...');
+      console.log('⚠️  浏览器可能有授权弹窗，请点击「允许」后等待连接...');
     }
     await new Promise((r) => setTimeout(r, 1000));
   }
 
-  console.log('❌ 连接超时，请检查 Chrome 调试设置');
+  console.log('❌ 连接超时，请检查浏览器调试设置');
   console.log(`  日志：${path.join(os.tmpdir(), 'cdp-proxy.log')}`);
   return false;
+}
+
+// --- 输出浏览器选择结果，返回是否可以继续启动 proxy ---
+
+function printAvailableHint(detected) {
+  const detectedIds = new Set(detected.map(b => b.id));
+  const configurable = knownBrowsers().filter(b => !detectedIds.has(b.id));
+  if (detected.length) {
+    console.log(`  已开启远程调试：${detected.map(b => `${b.label} (${b.id}, port ${b.port})`).join('、')}`);
+  }
+  if (configurable.length) {
+    console.log(`  其他可配置：${configurable.map(b => `${b.label} (${b.id})`).join('、')}`);
+  }
+}
+
+async function resolveAndReport(override) {
+  const result = await selectBrowser(override);
+
+  switch (result.kind) {
+    case 'ok': {
+      const sourceTag = result.source === 'override' ? '[--browser 指定]' : '[config.env 偏好]';
+      console.log(`browser: ok (${result.browser.label}, port ${result.browser.port}) ${sourceTag}`);
+      return { proceed: true, browserId: result.browser.id };
+    }
+
+    case 'ambiguous': {
+      console.log('browser: needs decision — 用户尚未在 config.env 设置偏好');
+      printAvailableHint(result.detected);
+      console.log('  请询问用户：哪个浏览器作为 Agent 的默认？（写入 config.env 的 WEB_ACCESS_BROWSER）');
+      console.log('  若仅本次使用，可重跑：node check-deps.mjs --browser <id>');
+      return { proceed: false, exitCode: 2 };
+    }
+
+    case 'mismatch': {
+      const expected = result.override || result.configured;
+      const expectedLabel = knownBrowsers().find(b => b.id === expected)?.label || expected;
+      const sourceDesc = result.source === 'override' ? '本次指定' : '默认偏好';
+      console.log(`browser: error — ${sourceDesc}的浏览器是 "${expected}" (${expectedLabel})，但没连上`);
+      console.log(`  Agent 处理顺序：`);
+      console.log(`    1. 先用系统命令打开 ${expectedLabel}（按你所在平台自行选择，如 macOS 的 open -a），再重新运行 node check-deps.mjs`);
+      console.log(`    2. 若仍报相同错误，可能是因为远程调试开关没启用 —— 告诉用户：在 ${expectedLabel} 的地址栏访问 ${expected}://inspect/#remote-debugging，勾选 "Allow remote debugging for this browser instance"`);
+      printAvailableHint(result.detected);
+      if (result.source === 'preference') {
+        console.log(`  也可以编辑 config.env 改默认偏好，或本次临时换浏览器：node check-deps.mjs --browser <id>`);
+      }
+      return { proceed: false, exitCode: 1 };
+    }
+
+    case 'empty': {
+      // 末路兜底：尝试常见固定端口（用户手动 --remote-debugging-port=9222 启动的场景）
+      const fallbackPort = await findFallbackPort();
+      if (fallbackPort) {
+        console.log(`browser: ok (port ${fallbackPort}) [通过手动调试端口连接]`);
+        return { proceed: true };
+      }
+      console.log('browser: 未连接 — 没有任何浏览器打开远程调试开关');
+      console.log(`  支持的浏览器：${knownBrowsers().map(b => b.label).join('、')}`);
+      console.log('  在你想用的浏览器地址栏打开 chrome://inspect/#remote-debugging 或 edge://inspect/#remote-debugging，勾选 "Allow remote debugging for this browser instance"');
+      return { proceed: false, exitCode: 1 };
+    }
+  }
 }
 
 // --- main ---
 
 async function main() {
+  const opts = parseArgs(process.argv.slice(2));
+  ensureConfigExists();
   checkNode();
 
-  const chromePort = await detectChromePort();
-  if (!chromePort) {
-    console.log('chrome: not connected — 请确保 Chrome 已打开，然后访问 chrome://inspect/#remote-debugging 并勾选 Allow remote debugging');
-    process.exit(1);
-  }
-  console.log(`chrome: ok (port ${chromePort})`);
+  const { proceed, exitCode, browserId } = await resolveAndReport(opts.browser);
+  if (!proceed) process.exit(exitCode);
 
-  const proxyOk = await ensureProxy();
-  if (!proxyOk) {
-    process.exit(1);
-  }
+  const proxyOk = await ensureProxy(browserId, opts.browser);
+  if (!proxyOk) process.exit(1);
 
   // 列出已有站点经验
   const patternsDir = path.join(ROOT, 'references', 'site-patterns');
@@ -165,7 +201,6 @@ async function main() {
       console.log(`\nsite-patterns: ${sites.join(', ')}`);
     }
   } catch {}
-
 }
 
 await main();

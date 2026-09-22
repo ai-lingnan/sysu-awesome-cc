@@ -19,6 +19,7 @@ sysu-awesome-cc/
 │   └── web-researcher.md    # 🔍 网络研究代理
 ├── commands/                # ⚡ 斜杠命令（暂无）
 ├── skills/
+│   ├── academic-paper-search/  # 🔎 学术论文搜索与下载
 │   ├── chat-history-summarizer/  # 📝 聊天历史总结
 │   ├── chinese-quote-converter/  # ✏️ 中文引号转换
 │   ├── frontend-design/     # 🎨 前端界面设计
@@ -44,6 +45,7 @@ sysu-awesome-cc/
 
 | 技能 | 说明 |
 |------|------|
+| **academic-paper-search** 🔎 | 跨 arXiv、NBER、SSRN、CrossRef、OpenAlex、Unpaywall、Semantic Scholar 的统一论文检索，支持 DOI 元数据查询、开放获取检测与 PDF 下载，覆盖经济、金融、社科与 CS/AI |
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 |
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
 | **frontend-design** 🎨 | 创建独特、生产级的前端界面，避免通用 AI 美学风格，适用于网页、着陆页、仪表板、React 组件与 HTML/CSS 布局 |

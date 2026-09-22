@@ -20,15 +20,20 @@ sysu-awesome-cc/
 ├── commands/                # ⚡ 斜杠命令（暂无）
 ├── skills/
 │   ├── academic-paper-search/  # 🔎 学术论文搜索与下载
+│   ├── agent-browser/       # 🕹️ 浏览器自动化 CLI
 │   ├── chat-history-summarizer/  # 📝 聊天历史总结
 │   ├── chinese-quote-converter/  # ✏️ 中文引号转换
+│   ├── do-agent/            # 🧩 多代理任务编排
 │   ├── frontend-design/     # 🎨 前端界面设计
 │   ├── github-trending/     # 🔥 GitHub 热门项目
 │   ├── html-slides/         # 🖥️ HTML 网页演示文稿
 │   ├── macro-data/          # 📈 宏观/财经数据取数
+│   ├── markitdown/          # 🔄 多格式文件转 Markdown
 │   ├── marp-slides-creator/ # 🖼️ Marp 演示文稿制作
 │   ├── md-to-docx/          # 📄 Markdown 转 Word
 │   ├── mineru-pdf-converter/ # 📑 MinerU PDF 转 Markdown
+│   ├── ui-ux-pro-max/       # 🎛️ UI/UX 设计知识库
+│   ├── web-access/          # 🌍 联网访问与浏览器自动化
 │   └── web-research/        # 🔬 结构化网络研究
 ├── .gitignore
 └── README.md
@@ -48,15 +53,20 @@ sysu-awesome-cc/
 | 技能 | 说明 |
 |------|------|
 | **academic-paper-search** 🔎 | 跨 arXiv、NBER、SSRN、CrossRef、OpenAlex、Unpaywall、Semantic Scholar 的统一论文检索，支持 DOI 元数据查询、开放获取检测与 PDF 下载，覆盖经济、金融、社科与 CS/AI |
+| **agent-browser** 🕹️ | 面向 AI 代理的浏览器自动化 CLI，通过快照引用定位元素，支持表单填写、截图、数据提取、会话保持与代理配置 |
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 |
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
+| **do-agent** 🧩 | 多代理多阶段任务编排：规划→执行→审阅→修订四个阶段并行派发子代理，子代理结果落盘而非回传，保护主代理上下文 |
 | **frontend-design** 🎨 | 创建独特、生产级的前端界面，避免通用 AI 美学风格，适用于网页、着陆页、仪表板、React 组件与 HTML/CSS 布局 |
 | **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单 |
 | **html-slides** 🖥️ | 制作可在浏览器放映的 HTML 课件，含封面、分部目录、翻页动效与自绘图表，支持截图审阅与导出 PDF / 可编辑 PPTX |
 | **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位 |
+| **markitdown** 🔄 | 将 PDF、Office 文档、图片、音频、网页等 20+ 格式转为 Markdown，支持 OCR、音频转写、YouTube 字幕提取与批量转换 |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |
 | **mineru-pdf-converter** 📑 | 使用 MinerU 云端 API 将 PDF 转换为高质量 Markdown，支持公式识别、表格提取、大文件自动拆分（>600页） |
+| **ui-ux-pro-max** 🎛️ | UI/UX 设计知识库：50+ 风格、97 套配色、57 组字体搭配、99 条 UX 准则、25 种图表，覆盖 9 个技术栈，支持关键词检索 |
+| **web-access** 🌍 | 统一的联网操作入口：搜索、抓取、登录后操作、CDP 浏览器自动化与站点经验积累，含 Jina 预处理降低 token 消耗 — MIT，来自 [eze-is/web-access](https://github.com/eze-is/web-access)（作者 一泽 Eze） |
 | **web-research** 🔬 | 结构化网络研究技能，通过子代理并行收集信息，系统化合成研究结果，支持复杂主题调研 - [From skillsmp](https://skillsmp.com/zh/skills/langchain-ai-deepagents-libs-deepagents-cli-examples-skills-web-research-skill-md) |
 
 ---

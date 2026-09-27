@@ -9,7 +9,7 @@
 
 本脚本兼容 Python 3.8+，这样版本太旧时也能跑起来并告诉你要升级。
 """
-import importlib.util, os, platform, shutil, subprocess, sys, sysconfig, time
+import importlib.util, os, platform, shutil, struct, subprocess, sys, sysconfig, time
 from pathlib import Path
 
 for _s in (sys.stdout, sys.stderr):          # Windows 控制台默认 GBK，统一 UTF-8 输出
@@ -75,6 +75,8 @@ def check():
     ver_ok = ver[:2] >= MIN_PY
     print("Python 版本 : %d.%d.%d  %s" % (ver[0], ver[1], ver[2],
           "OK" if ver_ok else "太旧，需要 >= %d.%d" % MIN_PY))
+    bits = struct.calcsize("P") * 8
+    print("Python 位数 : %d 位%s" % (bits, "" if bits == 64 else "  !! 需要 64 位 Python，32 位装不上 akshare 的依赖"))
     print("环境类型    :", env_kind())
     ok, msg = pip_ok()
     print("pip         :", msg if ok else "不可用 -> 先运行 <PY> -m ensurepip --upgrade")

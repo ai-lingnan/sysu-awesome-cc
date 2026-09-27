@@ -61,7 +61,7 @@ conda 不是必需：已有 conda 的用 conda 具名环境，没有的用系统
    - winget：`winget install -e --id Python.Python.3.13 --scope user`（官方安装包，装到用户目录，自动加入 PATH，不需要管理员）
    - 官网：让用户打开 https://www.python.org/downloads/windows/ ，下载 3.13 的 “Windows installer (64-bit)”，双击后**先勾选第一页底部的 “Add python.exe to PATH”**，再点 “Install Now”。如果下载到的是 “Python install manager”，也可以用：装完在新窗口运行 `py install 3.13`
 3. 装完**关闭所有 PowerShell、VS Code 和 Claude Code 窗口再重新打开**，PATH 只对新窗口生效
-4. 分清 `python` 和 `py`：`py` 是 Python 启动器，按注册表找已装的 Python，不依赖 PATH，官网安装包默认会装上；`python` 按 PATH 找，找不到时会落到 Microsoft Store 的占位符。`python3` 在 Windows 上基本都是占位符，不要用。拿到完整路径最稳：`$PY = (py -3 -c "import sys; print(sys.executable)")`，之后一律 `& $PY ...`
+4. 分清 `python` 和 `py`：`py` 是 Python 启动器，按注册表找已装的 Python，不依赖 PATH，官网安装包默认会装上；`python` 按 PATH 找，找不到时会落到 Microsoft Store 的占位符。`python3` 在 Windows 上多数情况是占位符（只有 Python install manager 附带一个兼容别名），不要依赖它。拿到完整路径最稳：`$PY = (py -3 -c "import sys; print(sys.executable)")`（旧式启动器和新的 install manager 都支持 `py -3`），之后一律 `& $PY ...`
 5. Microsoft Store 占位符的样子：`python` 输出 “Python was not found; run without arguments to install from the Microsoft Store...”，或者直接弹出商店；`where.exe python` 第一行是 `...\AppData\Local\Microsoft\WindowsApps\python.exe`。解决：改用 `py`；或让用户打开「设置 → 应用 → 高级应用设置 → 应用执行别名」，关掉“应用安装程序 python.exe / python3.exe”两项。例外：用 Python install manager 或 Microsoft Store 装的 Python，WindowsApps 里的 `python.exe` 就是正式入口，只要 `python --version` 能输出版本号就不要关
 6. 装包：`& $PY "<SKILL_DIR>\scripts\check_env.py" --install`，行为同 macOS
 
@@ -85,6 +85,7 @@ SMOKE: PASS
 | `Python was not found; run without arguments to install from the Microsoft Store` | Windows 的 Store 占位符 | 见上文 Windows 第 5 条 |
 | `pip` 不是命令 | pip 的 Scripts 目录不在 PATH | 不直接敲 `pip`，一律用 `<PY> -m pip` |
 | `No matching distribution found for akshare`，或提示 `Requires-Python >=3.11` | Python 版本太旧 | 装 Python 3.12/3.13 后重跑检查 |
+| Windows 上装 `mini-racer` 失败、要求编译器或 `Microsoft Visual C++ 14.0 is required` | 装的是 32 位 Python（mini-racer 没有 32 位安装包） | 看检查脚本的「Python 位数」一行；卸掉后重装 “Windows installer (64-bit)” |
 | `ModuleNotFoundError: No module named 'akshare'`，但刚装过 | 装进了另一个 Python | 装包和运行用同一个 `<PY>` 完整路径；以检查脚本打印的「Python 路径」为准 |
 | pip `ReadTimeoutError`、`ConnectionError`、`ProxyError` | 网络不通或代理干扰 | 脚本已按“清华镜像 → 官方源”自动重试；开着 VPN/代理的，把全局模式改成规则模式或暂时关闭；校园网先确认已登录 |
 | 取数时 `ProxyError`、`RemoteDisconnected`、超时 | 代理把国内网站绕到境外 | 统计局和 AKShare 都是国内源，直连最稳：关掉全局代理；清掉代理环境变量（macOS `unset HTTP_PROXY HTTPS_PROXY`，PowerShell `Remove-Item Env:HTTP_PROXY, Env:HTTPS_PROXY -ErrorAction SilentlyContinue`） |

@@ -63,7 +63,7 @@ sysu-awesome-cc/
 | **do-agent** 🧩 | 多代理多阶段任务编排：规划→执行→审阅→修订四个阶段并行派发子代理，子代理结果落盘而非回传，保护主代理上下文 |
 | **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单（由 [@keta1930](https://github.com/keta1930) 贡献） |
 | **html-slides** 🖥️ | 制作可在浏览器放映的 HTML 课件，含封面、分部目录、翻页动效与自绘图表，支持截图审阅与导出 PDF / 可编辑 PPTX |
-| **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位 |
+| **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位；首次使用自动检查环境，按 macOS / Windows 引导安装 Python 与 AKShare |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |
 

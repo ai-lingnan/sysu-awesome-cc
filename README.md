@@ -60,6 +60,7 @@ sysu-awesome-cc/
 | **academic-paper-search** 🔎 | 跨 arXiv、NBER、SSRN、CrossRef、OpenAlex、Unpaywall、Semantic Scholar 的统一论文检索，支持 DOI 元数据查询、开放获取检测与 PDF 下载，覆盖经济、金融、社科与 CS/AI |
 | **chat-history-summarizer** 📝 | 提取并总结聊天历史为结构化文档，记录用户输入和 Claude 行动，便于知识传承和复盘 |
 | **chinese-quote-converter** ✏️ | 将英文直引号转换为中文弯引号（"..." → “...”），支持代码块保护，适合中文文档排版 |
+| **deepseek-web** 🔎 | 用 DeepSeek 官方 Search／Fetch 接口联网搜索、读网页正文（与 DeepSeek 对话 API 同一个 Key）：先搜出处、再读原文核对数字，回答附链接与发布日期；只用 Python 标准库，国内网络可用 |
 | **do-agent** 🧩 | 多代理多阶段任务编排：规划→执行→审阅→修订四个阶段并行派发子代理，子代理结果落盘而非回传，保护主代理上下文 |
 | **github-trending** 🔥 | 获取 GitHub 热门项目列表与仓库 README，支持今日/本周/本月榜单（由 [@keta1930](https://github.com/keta1930) 贡献） |
 | **html-slides** 🖥️ | 制作可在浏览器放映的 HTML 课件，含封面、分部目录、翻页动效与自绘图表，支持截图审阅与导出 PDF / 可编辑 PPTX |

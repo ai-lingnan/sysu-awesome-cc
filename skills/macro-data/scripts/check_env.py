@@ -3,7 +3,7 @@
 
 用法（<PY> 换成你要检查的 Python：macOS 一般是 python3，Windows 是 py 或 python）：
   <PY> check_env.py              只检查，不改动任何东西（默认）
-  <PY> check_env.py --install    只装缺的必需包（先清华镜像，失败再官方源）；已装的不重装
+  <PY> check_env.py --install    只装缺的必需包（先清华镜像，失败再阿里云镜像）；已装的不重装
   <PY> check_env.py --install --optional   连同国际数据源的可选包一起装
   <PY> check_env.py --smoke      冒烟测试：统计局取一条 M2、AKShare 取一条 PMI
 
@@ -20,7 +20,7 @@ MIN_PY = (3, 11)                             # akshare 当前版本要求 Python
 REQUIRED = ["akshare"]                       # pandas、requests 等由 akshare 自动带上
 OPTIONAL = ["dbnomics", "wbgapi", "fredapi"] # 只在查国际数据时才需要
 MIRROR = "https://pypi.tuna.tsinghua.edu.cn/simple"
-OFFICIAL = "https://pypi.org/simple"
+BACKUP = "https://mirrors.aliyun.com/pypi/simple/"  # 国内备用镜像；本课按国内网络环境，不回退到境外官方源
 
 
 def pkg_version(name):
@@ -117,7 +117,7 @@ def pip_install(pkgs):
     base = [sys.executable, "-m", "pip", "install", "--disable-pip-version-check"]
     if need_user_flag():
         base.append("--user")
-    for index in (MIRROR, OFFICIAL):
+    for index in (MIRROR, BACKUP):
         print(">> pip install %s  (源: %s)" % (" ".join(pkgs), index), flush=True)
         r = subprocess.run(base + pkgs + ["-i", index, "--timeout", "60"])
         if r.returncode == 0:

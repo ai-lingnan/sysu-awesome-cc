@@ -44,7 +44,7 @@ conda 不是必需：已有 conda 的用 conda 具名环境，没有的用系统
 
 ### 第 2 步：先说明，得到同意再安装
 
-动手安装前，用一段话告诉用户：要装什么（名称和版本，例如“Python 3.13”“akshare 及其依赖共 27 个包，下载约 50 MB”）、装到哪里（检查结果里的「安装位置」，或 conda 环境路径）、从哪里下载（清华镜像，失败再用 PyPI 官方源）、大约要几分钟。**得到用户明确同意后再执行。** 检查结果里已经装好的不重装、不升级；用户不同意就停下，把下面的手动步骤告诉他。
+动手安装前，用一段话告诉用户：要装什么（名称和版本，例如“Python 3.13”“akshare 及其依赖共 27 个包，下载约 50 MB”）、装到哪里（检查结果里的「安装位置」，或 conda 环境路径）、从哪里下载（清华镜像，失败再用阿里云镜像）、大约要几分钟。**得到用户明确同意后再执行。** 检查结果里已经装好的不重装、不升级；用户不同意就停下，把下面的手动步骤告诉他。
 
 ### 第 3 步：安装（缺什么装什么）
 
@@ -87,7 +87,7 @@ SMOKE: PASS
 | `No matching distribution found for akshare`，或提示 `Requires-Python >=3.11` | Python 版本太旧 | 装 Python 3.12/3.13 后重跑检查 |
 | Windows 上装 `mini-racer` 失败、要求编译器或 `Microsoft Visual C++ 14.0 is required` | 装的是 32 位 Python（mini-racer 没有 32 位安装包） | 看检查脚本的「Python 位数」一行；卸掉后重装 “Windows installer (64-bit)” |
 | `ModuleNotFoundError: No module named 'akshare'`，但刚装过 | 装进了另一个 Python | 装包和运行用同一个 `<PY>` 完整路径；以检查脚本打印的「Python 路径」为准 |
-| pip `ReadTimeoutError`、`ConnectionError`、`ProxyError` | 网络不通或代理干扰 | 脚本已按“清华镜像 → 官方源”自动重试；开着 VPN/代理的，把全局模式改成规则模式或暂时关闭；校园网先确认已登录 |
+| pip `ReadTimeoutError`、`ConnectionError`、`ProxyError` | 网络不通或代理干扰 | 脚本已按“清华镜像 → 阿里云镜像”自动重试；开着 VPN/代理的，把全局模式改成规则模式或暂时关闭；校园网先确认已登录 |
 | 取数时 `ProxyError`、`RemoteDisconnected`、超时 | 代理把国内网站绕到境外 | 统计局和 AKShare 都是国内源，直连最稳：关掉全局代理；清掉代理环境变量（macOS `unset HTTP_PROXY HTTPS_PROXY`，PowerShell `Remove-Item Env:HTTP_PROXY, Env:HTTPS_PROXY -ErrorAction SilentlyContinue`） |
 | `SSL: CERTIFICATE_VERIFY_FAILED` | macOS：python.org 版 Python 没装证书；Windows：杀毒软件或公司网络拦截 HTTPS | macOS 双击「应用程序 → Python 3.x → Install Certificates.command」；Windows 暂时关闭杀毒软件的 HTTPS 扫描或换网络。只有 pip 装包可临时加 `--trusted-host pypi.tuna.tsinghua.edu.cn`，取数不要关证书校验 |
 | `SSLEOFError`、`SSLError` 偶发 | 代理或服务器抖动 | 关代理后重试 |
@@ -145,7 +145,7 @@ EOF
 ```
 
 - 常用：`macro_china_gdp`、`macro_china_pmi`、`macro_china_lpr`、`macro_china_shrzgm`、`stock_zh_index_daily("sh000001")`
-- **坑**：`macro_china_cpi_monthly` / `macro_usa_cpi_monthly` 走金十源，**滞后约一年**——查最新 CPI 改用统计局接口（见第 5 节）或 `macro_china_cpi_yearly`
+- **坑**：`macro_china_cpi_monthly` / `macro_usa_cpi_monthly` 走金十源，**滞后约一年**——查最新 CPI 改用统计局接口（见第 5 节）或 `macro_china_cpi`（东方财富源，2026-10-19 实测最新到 2026-09）；`macro_china_cpi_yearly` 同样走金十源、同样滞后，不要用
 - **坑**：个股东财源 `stock_zh_a_hist` 会 ConnectionError，用新浪源 `stock_zh_a_daily(symbol="sh600519")` 替代
 - 发现接口：`[x for x in dir(ak) if x.startswith('macro_china')]`
 

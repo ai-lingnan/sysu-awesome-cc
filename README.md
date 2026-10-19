@@ -66,6 +66,7 @@ sysu-awesome-cc/
 | **macro-data** 📈 | 宏观与财经数据取数，覆盖 AKShare、国家统计局新 API、DBnomics、World Bank、FRED、IMF DataMapper，附实测调用模板、常用序列 ID 与各源已知坑位；首次使用自动检查环境，按 macOS / Windows 引导安装 Python 与 AKShare |
 | **marp-slides-creator** 🎨 | 专业 Marp 演示文稿制作助手，支持完整工作流程（分析→制作→审阅→导出），内置 14 款主题风格 |
 | **md-to-docx** 📄 | Markdown 转 Word 文档，支持中文字体（仿宋）、1.5 倍行距、首行缩进、引用数字上标转换等专业格式 |
+| **media-save** 💾 | 把公开的微信公众号文章和抖音视频存到本地：给一个链接，公众号存成 Markdown + 按序编号的图片，抖音存成 MP4，均附 `source.json` 记录出处；只用 Python 标准库，按国内网络实测 |
 
 #### 🌍 第三方开源
 
